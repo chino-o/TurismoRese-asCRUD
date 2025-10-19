@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reseñas</title>
+</head>
+<body>
+  <h2 id="tituloLugar">Reseñas</h2>
+  <p id="usuarioActivo"></p>
+
+  <h3>Agregar reseña</h3>
+  <input type="text" id="comentario" placeholder="Comentario">
+  <input type="number" id="calificacion" placeholder="Calificación (1-5)" min="1" max="5">
+  <button onclick="agregarReseña()">Guardar reseña</button>
+
+  <h3>Reseñas guardadas</h3>
+  <ul id="listaReseñas"></ul>
+
+  <h3>Resumen</h3>
+  <p id="promedio"></p>
+  <p id="conteo"></p>
+
+  <p>
+    <button onclick="irLugares()">← Volver a lugares</button>
+    <button onclick="cerrarSesion()">Cerrar sesión</button>
+  </p>
+
+  <script src="script.js"></script>
+</body>
+</html>
