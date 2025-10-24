@@ -1,4 +1,4 @@
-/* ========= SEED DE DATOS (categorías y lugares) ========= */
+/* ========= SEED DE DATOS ========= */
 const SEED_KEY = "seedV1";
 
 const SEED = {
@@ -10,27 +10,18 @@ const SEED = {
     "Entretenimiento"
   ],
   lugares: [
-    // Cafeterías
     { id: 1, nombre: "Cafe Plaza", categoria: "Cafeterías" },
     { id: 2, nombre: "The Coffe Rancagua", categoria: "Cafeterías" },
     { id: 3, nombre: "Cafe de la Tarde", categoria: "Cafeterías" },
-
-    // Cosas Geek
     { id: 4, nombre: "Tienda de comics Z", categoria: "Cosas Geek" },
     { id: 5, nombre: "Arcade Retro", categoria: "Cosas Geek" },
     { id: 6, nombre: "Coleccionables OHiggins", categoria: "Cosas Geek" },
-
-    // Librerías
     { id: 7, nombre: "Libreria del centro", categoria: "Librerías" },
     { id: 8, nombre: "El Rincon del Lector", categoria: "Librerías" },
     { id: 9, nombre: "Cafe Literario", categoria: "Librerías" },
-
-    // Aire Libre
     { id: 10, nombre: "Parque Koke", categoria: "Aire Libre" },
     { id: 11, nombre: "Parque Comunal", categoria: "Aire Libre" },
     { id: 12, nombre: "Centro Deportivo Paticio Mekis", categoria: "Aire Libre" },
-
-    // Entretenimiento
     { id: 13, nombre: "Cinemark Rancagua", categoria: "Entretenimiento" },
     { id: 14, nombre: "Escape Room Central", categoria: "Entretenimiento" },
     { id: 15, nombre: "Cinemark Open Plaza", categoria: "Entretenimiento" }
@@ -45,7 +36,7 @@ function seedIfNeeded() {
   localStorage.setItem(SEED_KEY, "true");
 }
 
-/* ========= LOGIN LIBRE ========= */
+/* ========= LOGIN ========= */
 function iniciarSesion() {
   seedIfNeeded();
   const usuario = document.getElementById("nombreUsuario")?.value?.trim();
@@ -63,7 +54,7 @@ function cerrarSesion() {
   window.location.href = "index.html";
 }
 
-/* ========= UTIL ========= */
+/* ========= AUTH ========= */
 function ensureAuthOrRedirect() {
   const usuario = localStorage.getItem("usuarioActivo");
   if (!usuario) {
@@ -84,7 +75,6 @@ function cargarCategorias() {
   const cont = document.getElementById("listaCategorias");
   const categorias = JSON.parse(localStorage.getItem("categorias")) || [];
 
-  if (!cont) return;
   cont.innerHTML = "";
   categorias.forEach(cat => {
     const btn = document.createElement("button");
@@ -98,7 +88,7 @@ function cargarCategorias() {
   });
 }
 
-/* ========= LUGARES POR CATEGORÍA ========= */
+/* ========= LUGARES ========= */
 function cargarLugares() {
   const usuario = ensureAuthOrRedirect();
   if (!usuario) return;
@@ -106,11 +96,10 @@ function cargarLugares() {
   seedIfNeeded();
   const cat = localStorage.getItem("categoriaSeleccionada");
   const titulo = document.getElementById("tituloCategoria");
-  if (titulo) titulo.innerText = "Lugares - " + (cat || "");
+  titulo.innerText = "Lugares - " + cat;
 
   const lugares = JSON.parse(localStorage.getItem("lugares")) || [];
   const lista = document.getElementById("listaLugares");
-  if (!lista) return;
 
   const filtrados = lugares.filter(l => l.categoria === cat);
   lista.innerHTML = "";
@@ -131,7 +120,7 @@ function irCategorias() {
   window.location.href = "categorias.html";
 }
 
-/* ========= RESEÑAS POR LUGAR ========= */
+/* ========= RESEÑAS ========= */
 let reseñasCache = [];
 
 function cargarReseñasPorLugar() {
@@ -139,11 +128,10 @@ function cargarReseñasPorLugar() {
   if (!usuario) return;
 
   seedIfNeeded();
-  const lugarId = parseInt(localStorage.getItem("lugarSeleccionadoId") || "0");
-  const lugarNombre = localStorage.getItem("lugarSeleccionadoNombre") || "Lugar";
+  const lugarId = parseInt(localStorage.getItem("lugarSeleccionadoId"));
+  const lugarNombre = localStorage.getItem("lugarSeleccionadoNombre");
 
-  const titulo = document.getElementById("tituloLugar");
-  if (titulo) titulo.innerText = "Reseñas — " + lugarNombre;
+  document.getElementById("tituloLugar").innerText = "Reseñas — " + lugarNombre;
 
   reseñasCache = JSON.parse(localStorage.getItem("reseñas")) || [];
   mostrarReseñasLugar(lugarId);
@@ -152,9 +140,8 @@ function cargarReseñasPorLugar() {
 
 function mostrarReseñasLugar(idLugar) {
   const ul = document.getElementById("listaReseñas");
-  if (!ul) return;
-
   const delLugar = reseñasCache.filter(r => r.idLugar === idLugar);
+
   ul.innerHTML = "";
   delLugar.forEach((r, idx) => {
     const li = document.createElement("li");
@@ -166,29 +153,28 @@ function mostrarReseñasLugar(idLugar) {
 }
 
 function agregarReseña() {
-  const comentario = document.getElementById("comentario")?.value?.trim();
-  const calif = parseInt(document.getElementById("calificacion")?.value || "0");
+  const comentario = document.getElementById("comentario").value.trim();
+  const calif = parseInt(document.getElementById("calificacion").value);
   const usuario = localStorage.getItem("usuarioActivo");
-  const idLugar = parseInt(localStorage.getItem("lugarSeleccionadoId") || "0");
+  const idLugar = parseInt(localStorage.getItem("lugarSeleccionadoId"));
 
   if (!comentario || !(calif >= 1 && calif <= 5)) {
-    alert("Completa comentario y calificación entre 1 y 5.");
+    alert("Completa comentario y calificación válida.");
     return;
-    }
+  }
 
   reseñasCache = JSON.parse(localStorage.getItem("reseñas")) || [];
   reseñasCache.push({ idLugar, usuario, comentario, calificacion: calif });
   localStorage.setItem("reseñas", JSON.stringify(reseñasCache));
 
-  // Limpia campos y refresca
   document.getElementById("comentario").value = "";
   document.getElementById("calificacion").value = "";
+
   mostrarReseñasLugar(idLugar);
   calcularPromedioLugar(idLugar);
 }
 
 function editarReseña(idLugar, idxEnFiltrado) {
-  // Mapear índice filtrado al índice real en reseñasCache
   const indices = reseñasCache
     .map((r, i) => ({ r, i }))
     .filter(x => x.r.idLugar === idLugar)
@@ -222,7 +208,6 @@ function eliminarReseña(idLugar, idxEnFiltrado) {
 function calcularPromedioLugar(idLugar) {
   const p = document.getElementById("promedio");
   const c = document.getElementById("conteo");
-  if (!p || !c) return;
 
   const delLugar = reseñasCache.filter(r => r.idLugar === idLugar);
   if (delLugar.length === 0) {
@@ -230,40 +215,62 @@ function calcularPromedioLugar(idLugar) {
     c.innerText = "Total de reseñas: 0";
     return;
   }
+
   const total = delLugar.reduce((sum, r) => sum + r.calificacion, 0);
   const promedio = total / delLugar.length;
+
   p.innerText = "Promedio: " + promedio.toFixed(1);
   c.innerText = "Total de reseñas: " + delLugar.length;
 }
 
-/* ========= NAVEGACIÓN ========= */
 function irLugares() {
   window.location.href = "lugares.html";
 }
 
-/* ========= MOSTRAR/OCULTAR LISTA EN RESEÑAS ========= */
-let reseñasVisibles = true;
-function toggleReseñas() {
-  const lista = document.getElementById("listaReseñas");
-  const btn = document.getElementById("toggleBtn");
-  if (!lista || !btn) return;
+/* ========= REPORTES ========= */
+function listarGlobal() {
+  const ul = document.getElementById("listadoGlobal");
+  reseñasCache = JSON.parse(localStorage.getItem("reseñas")) || [];
 
-  if (reseñasVisibles) {
-    lista.style.display = "none";
-    btn.innerText = "Mostrar";
-    reseñasVisibles = false;
-  } else {
-    lista.style.display = "block";
-    btn.innerText = "Ocultar";
-    reseñasVisibles = true;
-  }
+  ul.innerHTML = "";
+  reseñasCache.forEach((r, i) => {
+    ul.innerHTML += `<li>ID:${i} — ${r.usuario}: "${r.comentario}" ⭐${r.calificacion}</li>`;
+  });
 }
 
-/* ========= DISPATCH POR PÁGINA ========= */
+function buscarPorID() {
+  const id = parseInt(document.getElementById("buscarID").value);
+  reseñasCache = JSON.parse(localStorage.getItem("reseñas")) || [];
+
+  const res = reseñasCache[id];
+  document.getElementById("resultadoBusqueda").innerText =
+    res ? `${res.usuario} "${res.comentario}" ⭐${res.calificacion}` : "No existe.";
+}
+
+function filtrarRango() {
+  const min = parseInt(document.getElementById("min").value);
+  const max = parseInt(document.getElementById("max").value);
+  const ul = document.getElementById("resultadoRango");
+
+  reseñasCache = JSON.parse(localStorage.getItem("reseñas")) || [];
+  ul.innerHTML = "";
+
+  reseñasCache
+    .filter(r => r.calificacion >= min && r.calificacion <= max)
+    .forEach(r => {
+      ul.innerHTML += `<li>${r.usuario}: "${r.comentario}" ⭐${r.calificacion}</li>`;
+    });
+}
+
+/* ========= DISPATCH ========= */
 window.onload = () => {
   const path = window.location.pathname.toLowerCase();
   if (path.endsWith("categorias.html")) cargarCategorias();
   if (path.endsWith("lugares.html")) cargarLugares();
   if (path.endsWith("reseñas.html")) cargarReseñasPorLugar();
+  if (path.endsWith("reportes.html")) {
+    ensureAuthOrRedirect();
+    listarGlobal();
+  }
   if (path.endsWith("index.html")) seedIfNeeded();
 };

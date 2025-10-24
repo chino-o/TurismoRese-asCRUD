@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reportes</title>
+</head>
+<body>
+  <h2>Reportes generales</h2>
+  <p id="usuarioActivo"></p>
+
+  <h3>Listar todas las reseñas</h3>
+  <ul id="listadoGlobal"></ul>
+
+  <h3>Buscar reseña por ID</h3>
+  <input type="number" id="buscarID" placeholder="ID">
+  <button onclick="buscarPorID()">Buscar</button>
+  <p id="resultadoBusqueda"></p>
+
+  <h3>Filtrar reseñas por rango</h3>
+  <input type="number" id="min" placeholder="Min (1-5)">
+  <input type="number" id="max" placeholder="Max (1-5)">
+  <button onclick="filtrarRango()">Filtrar</button>
+  <ul id="resultadoRango"></ul>
+
+  <p>
+    <button onclick="irCategorias()">← Volver</button>
+    <button onclick="cerrarSesion()">Cerrar sesión</button>
+  </p>
+
+  <script src="script.js"></script>
+</body>
+</html>
