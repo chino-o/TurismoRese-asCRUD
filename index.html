@@ -6,11 +6,34 @@
 </head>
 <body>
   <h2>Inicio de sesión</h2>
-  <p>Ingresa un usuario y contraseña (cualquiera) para continuar.</p>
+  <form onsubmit="iniciarSesion(); return false;">
+    <div>
+      <label for="nombreUsuario">Usuario:</label>
+      <input type="text" id="nombreUsuario" placeholder="Tu usuario" required>
+    </div>
+    <div>
+      <label for="claveUsuario">Contraseña:</label>
+      <input type="password" id="claveUsuario" placeholder="Tu contraseña" required>
+    </div>
+    <div style="margin-top: 10px;">
+      <button type="submit">Entrar</button>
+    </div>
+  </form>
 
-  <input type="text" id="nombreUsuario" placeholder="Usuario">
-  <input type="password" id="claveUsuario" placeholder="Contraseña">
-  <button onclick="iniciarSesion()">Entrar</button>
+  <hr>
+
+  <h2>¿No tienes cuenta? Regístrate</h2>
+  <form onsubmit="registrarUsuario(); return false;">
+    <div>
+      <label for="nuevoUsuario">Nuevo Usuario:</label>
+      <input type="text" id="nuevoUsuario" placeholder="Elige un nombre de usuario" required>
+    </div>
+    <div>
+      <label for="nuevaClave">Nueva Contraseña:</label>
+      <input type="password" id="nuevaClave" placeholder="Elige una contraseña" required>
+    </div>
+    <button type="submit">Registrar</button>
+  </form>
 
   <script src="script.js"></script>
 </body>

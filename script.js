@@ -3,28 +3,18 @@ const SEED_KEY = "seedV1";
 
 const SEED = {
   categorias: [
-    "Cafeterías",
-    "Cosas Geek",
-    "Librerías",
-    "Aire Libre",
-    "Entretenimiento"
+    "Cafeterías", "Librerías", "Aire Libre"
   ],
   lugares: [
     { id: 1, nombre: "Cafe Plaza", categoria: "Cafeterías" },
     { id: 2, nombre: "The Coffe Rancagua", categoria: "Cafeterías" },
     { id: 3, nombre: "Cafe de la Tarde", categoria: "Cafeterías" },
-    { id: 4, nombre: "Tienda de comics Z", categoria: "Cosas Geek" },
-    { id: 5, nombre: "Arcade Retro", categoria: "Cosas Geek" },
-    { id: 6, nombre: "Coleccionables OHiggins", categoria: "Cosas Geek" },
     { id: 7, nombre: "Libreria del centro", categoria: "Librerías" },
     { id: 8, nombre: "El Rincon del Lector", categoria: "Librerías" },
     { id: 9, nombre: "Cafe Literario", categoria: "Librerías" },
     { id: 10, nombre: "Parque Koke", categoria: "Aire Libre" },
     { id: 11, nombre: "Parque Comunal", categoria: "Aire Libre" },
-    { id: 12, nombre: "Centro Deportivo Paticio Mekis", categoria: "Aire Libre" },
-    { id: 13, nombre: "Cinemark Rancagua", categoria: "Entretenimiento" },
-    { id: 14, nombre: "Escape Room Central", categoria: "Entretenimiento" },
-    { id: 15, nombre: "Cinemark Open Plaza", categoria: "Entretenimiento" }
+    { id: 12, nombre: "Centro Deportivo Paticio Mekis", categoria: "Aire Libre" }
   ]
 };
 
@@ -33,20 +23,54 @@ function seedIfNeeded() {
   localStorage.setItem("categorias", JSON.stringify(SEED.categorias));
   localStorage.setItem("lugares", JSON.stringify(SEED.lugares));
   localStorage.setItem("reseñas", JSON.stringify([]));
+  localStorage.setItem("usuarios", JSON.stringify([])); // Inicializa la lista de usuarios
   localStorage.setItem(SEED_KEY, "true");
 }
 
 /* ========= LOGIN ========= */
 function iniciarSesion() {
   seedIfNeeded();
-  const usuario = document.getElementById("nombreUsuario")?.value?.trim();
+  const nombreUsuario = document.getElementById("nombreUsuario")?.value?.trim();
   const clave = document.getElementById("claveUsuario")?.value?.trim();
-  if (!usuario || !clave) {
-    alert("Ingresa usuario y contraseña (cualquiera).");
+  if (!nombreUsuario || !clave) {
+    alert("Ingresa usuario y contraseña.");
     return;
   }
-  localStorage.setItem("usuarioActivo", usuario);
-  window.location.href = "categorias.html";
+
+  const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+  const usuarioEncontrado = usuarios.find(u => u.nombre === nombreUsuario && u.clave === clave);
+
+  if (usuarioEncontrado) {
+    localStorage.setItem("usuarioActivo", nombreUsuario);
+    window.location.href = "categorias.html";
+  } else {
+    alert("Usuario o contraseña incorrectos.");
+  }
+}
+
+function registrarUsuario() {
+  seedIfNeeded();
+  const nuevoUsuario = document.getElementById("nuevoUsuario")?.value?.trim();
+  const nuevaClave = document.getElementById("nuevaClave")?.value?.trim();
+
+  if (!nuevoUsuario || !nuevaClave) {
+    alert("Por favor, completa ambos campos para registrarte.");
+    return;
+  }
+
+  const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+  const usuarioExiste = usuarios.some(u => u.nombre === nuevoUsuario);
+
+  if (usuarioExiste) {
+    alert("El nombre de usuario ya existe. Por favor, elige otro.");
+    return;
+  }
+
+  usuarios.push({ nombre: nuevoUsuario, clave: nuevaClave });
+  localStorage.setItem("usuarios", JSON.stringify(usuarios));
+  alert("¡Registro exitoso! Ahora puedes iniciar sesión.");
+  document.getElementById("nuevoUsuario").value = "";
+  document.getElementById("nuevaClave").value = "";
 }
 
 function cerrarSesion() {
@@ -66,12 +90,46 @@ function ensureAuthOrRedirect() {
   return usuario;
 }
 
+/* ========= ACCESO BASE DE DATOS (ADMIN) ========= */
+function abrirBD() {
+  const usuario = localStorage.getItem("usuarioActivo");
+
+  if (!usuario) {
+    alert("Debes iniciar sesión primero.");
+    window.location.href = "index.html";
+    return;
+  }
+
+  if (usuario.toLowerCase() === "admin") {
+    window.location.href = "reportes.html";
+  } else {
+    alert("Acceso restringido: solo el administrador puede entrar a la Base de Datos.");
+  }
+}
+
+function configurarBotonBD(usuario) {
+  const btn = document.getElementById("btnReportes");
+  if (!btn) return;
+
+  btn.innerText = "Base de datos (BD)";
+
+  if (usuario && usuario.toLowerCase() === "admin") {
+    btn.style.display = "inline-block";
+    btn.onclick = abrirBD;
+  } else {
+    btn.style.display = "none";
+    btn.onclick = null;
+  }
+}
+
 /* ========= CATEGORÍAS ========= */
 function cargarCategorias() {
   const usuario = ensureAuthOrRedirect();
   if (!usuario) return;
 
   seedIfNeeded();
+  configurarBotonBD(usuario);
+
   const cont = document.getElementById("listaCategorias");
   const categorias = JSON.parse(localStorage.getItem("categorias")) || [];
 
@@ -79,30 +137,23 @@ function cargarCategorias() {
   categorias.forEach(cat => {
     const btn = document.createElement("button");
     btn.innerText = cat;
-    btn.onclick = () => {
-      localStorage.setItem("categoriaSeleccionada", cat);
-      window.location.href = "lugares.html";
-    };
+    btn.onclick = () => mostrarLugaresPorCategoria(cat);
     cont.appendChild(btn);
     cont.appendChild(document.createElement("br"));
   });
 }
 
-/* ========= LUGARES ========= */
-function cargarLugares() {
-  const usuario = ensureAuthOrRedirect();
-  if (!usuario) return;
-
-  seedIfNeeded();
-  const cat = localStorage.getItem("categoriaSeleccionada");
-  const titulo = document.getElementById("tituloCategoria");
-  titulo.innerText = "Lugares - " + cat;
+function mostrarLugaresPorCategoria(categoria) {
+  const titulo = document.getElementById("tituloLugares");
+  const lista = document.getElementById("listaLugares");
+  
+  if (titulo) titulo.innerText = "Lugares de " + categoria;
+  if (!lista) return;
+  lista.innerHTML = "";
 
   const lugares = JSON.parse(localStorage.getItem("lugares")) || [];
-  const lista = document.getElementById("listaLugares");
+  const filtrados = lugares.filter(l => l.categoria === categoria);
 
-  const filtrados = lugares.filter(l => l.categoria === cat);
-  lista.innerHTML = "";
   filtrados.forEach(l => {
     const btn = document.createElement("button");
     btn.innerText = l.nombre;
@@ -114,6 +165,38 @@ function cargarLugares() {
     lista.appendChild(btn);
     lista.appendChild(document.createElement("br"));
   });
+}
+
+/* ========= LUGARES ========= */
+function cargarLugares() {
+  const usuario = ensureAuthOrRedirect();
+  if (!usuario) return;
+
+  seedIfNeeded();
+  const cat = localStorage.getItem("categoriaSeleccionada");
+  const titulo = document.getElementById("tituloCategoria");
+  if (titulo && cat) {
+    titulo.innerText = "Lugares - " + cat;
+  }
+
+  const lugares = JSON.parse(localStorage.getItem("lugares")) || [];
+  const lista = document.getElementById("listaLugares");
+
+  const filtrados = lugares.filter(l => l.categoria === cat);
+  if (lista) {
+    lista.innerHTML = "";
+    filtrados.forEach(l => {
+      const btn = document.createElement("button");
+      btn.innerText = l.nombre;
+      btn.onclick = () => {
+        localStorage.setItem("lugarSeleccionadoId", String(l.id));
+        localStorage.setItem("lugarSeleccionadoNombre", l.nombre);
+        window.location.href = "reseñas.html";
+      };
+      lista.appendChild(btn);
+      lista.appendChild(document.createElement("br"));
+    });
+  }
 }
 
 function irCategorias() {
@@ -131,7 +214,10 @@ function cargarReseñasPorLugar() {
   const lugarId = parseInt(localStorage.getItem("lugarSeleccionadoId"));
   const lugarNombre = localStorage.getItem("lugarSeleccionadoNombre");
 
-  document.getElementById("tituloLugar").innerText = "Reseñas — " + lugarNombre;
+  const tituloLugar = document.getElementById("tituloLugar");
+  if (tituloLugar) {
+    tituloLugar.innerText = "Reseñas — " + lugarNombre;
+  }
 
   reseñasCache = JSON.parse(localStorage.getItem("reseñas")) || [];
   mostrarReseñasLugar(lugarId);
@@ -141,13 +227,20 @@ function cargarReseñasPorLugar() {
 function mostrarReseñasLugar(idLugar) {
   const ul = document.getElementById("listaReseñas");
   const delLugar = reseñasCache.filter(r => r.idLugar === idLugar);
+  const usuarioActivo = localStorage.getItem("usuarioActivo");
 
+  if (!ul) return;
   ul.innerHTML = "";
   delLugar.forEach((r, idx) => {
     const li = document.createElement("li");
-    li.innerHTML = `<b>${r.usuario}</b>: "${r.comentario}" ⭐${r.calificacion}
-      <button onclick="editarReseña(${idLugar}, ${idx})">Editar</button>
-      <button onclick="eliminarReseña(${idLugar}, ${idx})">Eliminar</button>`;
+    let buttonsHTML = "";
+
+    if (r.usuario === usuarioActivo) {
+      buttonsHTML = `
+        <button onclick="editarReseña(${idLugar}, ${idx})">Editar</button>
+        <button onclick="eliminarReseña(${idLugar}, ${idx})">Eliminar</button>`;
+    }
+    li.innerHTML = `<b>${r.usuario}</b>: "${r.comentario}" ⭐${r.calificacion} ${buttonsHTML}`;
     ul.appendChild(li);
   });
 }
@@ -163,13 +256,21 @@ function agregarReseña() {
     return;
   }
 
-  reseñasCache = JSON.parse(localStorage.getItem("reseñas")) || [];
-  reseñasCache.push({ idLugar, usuario, comentario, calificacion: calif });
-  localStorage.setItem("reseñas", JSON.stringify(reseñasCache));
+  let reseñas = JSON.parse(localStorage.getItem("reseñas")) || [];
+
+  reseñas.push({
+    idLugar,
+    usuario,
+    comentario,
+    calificacion: calif
+  });
+
+  localStorage.setItem("reseñas", JSON.stringify(reseñas));
 
   document.getElementById("comentario").value = "";
   document.getElementById("calificacion").value = "";
 
+  reseñasCache = reseñas;
   mostrarReseñasLugar(idLugar);
   calcularPromedioLugar(idLugar);
 }
@@ -211,16 +312,16 @@ function calcularPromedioLugar(idLugar) {
 
   const delLugar = reseñasCache.filter(r => r.idLugar === idLugar);
   if (delLugar.length === 0) {
-    p.innerText = "Promedio: — (sin reseñas)";
-    c.innerText = "Total de reseñas: 0";
+    if (p) p.innerText = "Promedio: — (sin reseñas)";
+    if (c) c.innerText = "Total de reseñas: 0";
     return;
   }
 
   const total = delLugar.reduce((sum, r) => sum + r.calificacion, 0);
   const promedio = total / delLugar.length;
 
-  p.innerText = "Promedio: " + promedio.toFixed(1);
-  c.innerText = "Total de reseñas: " + delLugar.length;
+  if (p) p.innerText = "Promedio: " + promedio.toFixed(1);
+  if (c) c.innerText = "Total de reseñas: " + delLugar.length;
 }
 
 function irLugares() {
@@ -231,20 +332,42 @@ function irLugares() {
 function listarGlobal() {
   const ul = document.getElementById("listadoGlobal");
   reseñasCache = JSON.parse(localStorage.getItem("reseñas")) || [];
+  const lugares = JSON.parse(localStorage.getItem("lugares")) || [];
 
+  if (!ul) return;
   ul.innerHTML = "";
   reseñasCache.forEach((r, i) => {
-    ul.innerHTML += `<li>ID:${i} — ${r.usuario}: "${r.comentario}" ⭐${r.calificacion}</li>`;
+    const lugar = lugares.find(l => l.id === r.idLugar);
+    const nombreLugar = lugar ? lugar.nombre : "Lugar desconocido";
+    ul.innerHTML += `<li><b>Usuario:</b> ${r.usuario} | <b>Lugar:</b> ${nombreLugar} <br> "${r.comentario}" ⭐${r.calificacion}
+      <button onclick="editarReseñaGlobal(${i})">Editar</button> <button onclick="eliminarReseñaGlobal(${i})">Eliminar</button></li>`;
   });
 }
 
-function buscarPorID() {
-  const id = parseInt(document.getElementById("buscarID").value);
-  reseñasCache = JSON.parse(localStorage.getItem("reseñas")) || [];
+function buscarPorUsuario() {
+  const nombre = document.getElementById("buscarUsuario").value.trim().toLowerCase();
+  const resultado = document.getElementById("resultadoBusqueda");
 
-  const res = reseñasCache[id];
-  document.getElementById("resultadoBusqueda").innerText =
-    res ? `${res.usuario} "${res.comentario}" ⭐${res.calificacion}` : "No existe.";
+  if (!nombre) {
+    resultado.innerText = "Por favor, escribe un nombre de usuario.";
+    return;
+  }
+
+  const reseñas = JSON.parse(localStorage.getItem("reseñas")) || [];
+  const lugares = JSON.parse(localStorage.getItem("lugares")) || [];
+
+  const filtradas = reseñas.filter(r => r.usuario.toLowerCase() === nombre);
+
+  if (filtradas.length === 0) {
+    resultado.innerText = "No se encontraron reseñas para ese usuario.";
+    return;
+  }
+
+  resultado.innerHTML = filtradas.map(r => {
+    const lugar = lugares.find(l => l.id === r.idLugar);
+    const nombreLugar = lugar ? lugar.nombre : "Lugar desconocido";
+    return `• "${r.comentario}" en ${nombreLugar} ⭐${r.calificacion}`;
+  }).join("<br>");
 }
 
 function filtrarRango() {
@@ -253,6 +376,7 @@ function filtrarRango() {
   const ul = document.getElementById("resultadoRango");
 
   reseñasCache = JSON.parse(localStorage.getItem("reseñas")) || [];
+  if (!ul) return;
   ul.innerHTML = "";
 
   reseñasCache
@@ -262,6 +386,26 @@ function filtrarRango() {
     });
 }
 
+function editarReseñaGlobal(idx) {
+  reseñasCache = JSON.parse(localStorage.getItem("reseñas")) || [];
+  const r = reseñasCache[idx];
+  if (!r) return;
+
+  const nuevoComentario = prompt("Nuevo comentario:", r.comentario) ?? r.comentario;
+  const nuevaCalif = parseInt(prompt("Nueva calificación (1-5):", r.calificacion)) || r.calificacion;
+
+  reseñasCache[idx] = { ...r, comentario: nuevoComentario, calificacion: nuevaCalif };
+  localStorage.setItem("reseñas", JSON.stringify(reseñasCache));
+  listarGlobal();
+}
+
+function eliminarReseñaGlobal(idx) {
+  reseñasCache = JSON.parse(localStorage.getItem("reseñas")) || [];
+  reseñasCache.splice(idx, 1);
+  localStorage.setItem("reseñas", JSON.stringify(reseñasCache));
+  listarGlobal();
+}
+
 /* ========= DISPATCH ========= */
 window.onload = () => {
   const path = window.location.pathname.toLowerCase();
@@ -269,7 +413,13 @@ window.onload = () => {
   if (path.endsWith("lugares.html")) cargarLugares();
   if (path.endsWith("reseñas.html")) cargarReseñasPorLugar();
   if (path.endsWith("reportes.html")) {
-    ensureAuthOrRedirect();
+    const usuario = ensureAuthOrRedirect();
+    if (!usuario) return;
+    if (usuario.toLowerCase() !== "admin") {
+      alert("Acceso restringido: solo el administrador puede entrar a la Base de Datos.");
+      window.location.href = "categorias.html";
+      return;
+    }
     listarGlobal();
   }
   if (path.endsWith("index.html")) seedIfNeeded();
