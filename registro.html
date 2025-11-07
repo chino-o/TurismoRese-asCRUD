@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registro - Reseñas Turísticas</title>
+</head>
+<body>
+  <h2>¿No tienes cuenta? Regístrate</h2>
+  <form onsubmit="registrarUsuario(); return false;">
+    <div>
+      <label for="nuevoUsuario">Nuevo Usuario:</label>
+      <input type="text" id="nuevoUsuario" placeholder="Elige un nombre de usuario" required>
+    </div>
+    <div>
+      <label for="nuevaClave">Nueva Contraseña:</label>
+      <input type="password" id="nuevaClave" placeholder="Elige una contraseña" required>
+    </div>
+    <button type="submit">Registrar</button>
+  </form>
+
+  <p><a href="index.html">¿Ya tienes cuenta? Inicia sesión</a></p>
+
+  <script src="script.js"></script>
+</body>
+</html>
