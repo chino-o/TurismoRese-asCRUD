@@ -27,6 +27,23 @@ function seedIfNeeded() {
   localStorage.setItem(SEED_KEY, "true");
 }
 
+function normalizeUsuariosIds() {
+  const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+  let changed = false;
+  let maxId = usuarios.reduce((max, u) => (typeof u.id === "number" && u.id > max ? u.id : max), 0);
+  usuarios.forEach(u => {
+    if (typeof u.id !== "number") {
+      maxId += 1;
+      u.id = maxId;
+      changed = true;
+    }
+  });
+  if (changed) {
+    localStorage.setItem("usuarios", JSON.stringify(usuarios));
+  }
+  return usuarios;
+}
+
 /* ========= LOGIN ========= */
 function iniciarSesion() {
   seedIfNeeded();
@@ -37,7 +54,7 @@ function iniciarSesion() {
     return;
   }
 
-  const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+  const usuarios = normalizeUsuariosIds();
   const usuarioEncontrado = usuarios.find(u => u.nombre === nombreUsuario && u.clave === clave);
 
   if (usuarioEncontrado) {
@@ -58,7 +75,7 @@ function registrarUsuario() {
     return;
   }
 
-  const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+  const usuarios = normalizeUsuariosIds();
   const usuarioExiste = usuarios.some(u => u.nombre === nuevoUsuario);
 
   if (usuarioExiste) {
@@ -66,7 +83,9 @@ function registrarUsuario() {
     return;
   }
 
-  usuarios.push({ nombre: nuevoUsuario, clave: nuevaClave });
+  const maxId = usuarios.reduce((max, u) => (typeof u.id === "number" && u.id > max ? u.id : max), 0);
+  const nuevoId = maxId + 1;
+  usuarios.push({ id: nuevoId, nombre: nuevoUsuario, clave: nuevaClave });
   localStorage.setItem("usuarios", JSON.stringify(usuarios));
   alert("¡Registro exitoso! Ahora puedes iniciar sesión.");
   document.getElementById("nuevoUsuario").value = "";
@@ -146,7 +165,7 @@ function cargarCategorias() {
 function mostrarLugaresPorCategoria(categoria) {
   const titulo = document.getElementById("tituloLugares");
   const lista = document.getElementById("listaLugares");
-  
+
   if (titulo) titulo.innerText = "Lugares de " + categoria;
   if (!lista) return;
   lista.innerHTML = "";
@@ -345,29 +364,42 @@ function listarGlobal() {
 }
 
 function buscarPorUsuario() {
-  const nombre = document.getElementById("buscarUsuario").value.trim().toLowerCase();
+  const input = document.getElementById("buscarUsuario").value.trim().toLowerCase();
   const resultado = document.getElementById("resultadoBusqueda");
 
-  if (!nombre) {
-    resultado.innerText = "Por favor, escribe un nombre de usuario.";
+  if (!input) {
+    resultado.innerText = "Por favor, escribe un nombre de usuario o un ID.";
     return;
   }
 
   const reseñas = JSON.parse(localStorage.getItem("reseñas")) || [];
   const lugares = JSON.parse(localStorage.getItem("lugares")) || [];
+  const usuarios = normalizeUsuariosIds();
 
-  const filtradas = reseñas.filter(r => r.usuario.toLowerCase() === nombre);
+  const usuarioEncontrado = usuarios.find(u =>
+    u.nombre.toLowerCase() === input || String(u.id) === input
+  );
 
-  if (filtradas.length === 0) {
-    resultado.innerText = "No se encontraron reseñas para ese usuario.";
+  if (!usuarioEncontrado) {
+    resultado.innerText = "No se encontró un usuario con ese nombre o ID.";
     return;
   }
 
-  resultado.innerHTML = filtradas.map(r => {
+  const filtradas = reseñas.filter(r => r.usuario.toLowerCase() === usuarioEncontrado.nombre.toLowerCase());
+
+  if (filtradas.length === 0) {
+    resultado.innerHTML = `<b>Usuario:</b> ${usuarioEncontrado.nombre} (ID: ${usuarioEncontrado.id})<br>Este usuario no tiene reseñas.`;
+    return;
+  }
+
+  let htmlResultado = `<b>Usuario:</b> ${usuarioEncontrado.nombre} (ID: ${usuarioEncontrado.id})<br>`;
+  htmlResultado += filtradas.map(r => {
     const lugar = lugares.find(l => l.id === r.idLugar);
     const nombreLugar = lugar ? lugar.nombre : "Lugar desconocido";
     return `• "${r.comentario}" en ${nombreLugar} ⭐${r.calificacion}`;
   }).join("<br>");
+
+  resultado.innerHTML = htmlResultado;
 }
 
 function filtrarRango() {
