@@ -281,7 +281,8 @@ function agregarReseña() {
     idLugar,
     usuario,
     comentario,
-    calificacion: calif
+    calificacion: calif,
+    fecha: new Date().toISOString() // Guardar fecha de creación
   });
 
   localStorage.setItem("reseñas", JSON.stringify(reseñas));
@@ -352,13 +353,17 @@ function listarGlobal() {
   const ul = document.getElementById("listadoGlobal");
   reseñasCache = JSON.parse(localStorage.getItem("reseñas")) || [];
   const lugares = JSON.parse(localStorage.getItem("lugares")) || [];
+  const totalReseñasEl = document.getElementById("totalReseñas");
+
+  if (totalReseñasEl) totalReseñasEl.innerText = reseñasCache.length;
 
   if (!ul) return;
   ul.innerHTML = "";
   reseñasCache.forEach((r, i) => {
     const lugar = lugares.find(l => l.id === r.idLugar);
     const nombreLugar = lugar ? lugar.nombre : "Lugar desconocido";
-    ul.innerHTML += `<li><b>Usuario:</b> ${r.usuario} | <b>Lugar:</b> ${nombreLugar} <br> "${r.comentario}" ⭐${r.calificacion}
+    const fechaFormateada = r.fecha ? new Date(r.fecha).toLocaleDateString() : 'Sin fecha';
+    ul.innerHTML += `<li><b>Usuario:</b> ${r.usuario} | <b>Lugar:</b> ${nombreLugar} | <b>Fecha:</b> ${fechaFormateada} <br> "${r.comentario}" ⭐${r.calificacion}
       <button onclick="editarReseñaGlobal(${i})">Editar</button> <button onclick="eliminarReseñaGlobal(${i})">Eliminar</button></li>`;
   });
 }
@@ -385,19 +390,28 @@ function buscarPorUsuario() {
     return;
   }
 
-  const filtradas = reseñas.filter(r => r.usuario.toLowerCase() === usuarioEncontrado.nombre.toLowerCase());
+  // Mapeamos las reseñas para incluir su índice original antes de filtrar
+  const reseñasConIndice = reseñas.map((r, index) => ({ ...r, originalIndex: index }));
+  const filtradas = reseñasConIndice.filter(r => r.usuario.toLowerCase() === usuarioEncontrado.nombre.toLowerCase());
 
   if (filtradas.length === 0) {
     resultado.innerHTML = `<b>Usuario:</b> ${usuarioEncontrado.nombre} (ID: ${usuarioEncontrado.id})<br>Este usuario no tiene reseñas.`;
     return;
   }
 
-  let htmlResultado = `<b>Usuario:</b> ${usuarioEncontrado.nombre} (ID: ${usuarioEncontrado.id})<br>`;
+  let htmlResultado = `<b>Usuario:</b> ${usuarioEncontrado.nombre} (ID: ${usuarioEncontrado.id})<br><ul>`;
   htmlResultado += filtradas.map(r => {
     const lugar = lugares.find(l => l.id === r.idLugar);
     const nombreLugar = lugar ? lugar.nombre : "Lugar desconocido";
-    return `• "${r.comentario}" en ${nombreLugar} ⭐${r.calificacion}`;
-  }).join("<br>");
+    const fechaFormateada = r.fecha ? new Date(r.fecha).toLocaleDateString() : 'Sin fecha';
+    // Usamos el índice original para los botones de editar/eliminar
+    const buttonsHTML = `
+      <button onclick="editarReseñaGlobal(${r.originalIndex})">Editar</button>
+      <button onclick="eliminarReseñaGlobal(${r.originalIndex})">Eliminar</button>
+    `;
+    return `<li>• "${r.comentario}" en ${nombreLugar} ⭐${r.calificacion} (Fecha: ${fechaFormateada}) ${buttonsHTML}</li>`;
+  }).join("");
+  htmlResultado += "</ul>";
 
   resultado.innerHTML = htmlResultado;
 }
@@ -407,15 +421,53 @@ function filtrarRango() {
   const max = parseInt(document.getElementById("max").value);
   const ul = document.getElementById("resultadoRango");
 
-  reseñasCache = JSON.parse(localStorage.getItem("reseñas")) || [];
   if (!ul) return;
   ul.innerHTML = "";
+
+  reseñasCache = JSON.parse(localStorage.getItem("reseñas")) || [];
+  const usuarios = normalizeUsuariosIds();
 
   reseñasCache
     .filter(r => r.calificacion >= min && r.calificacion <= max)
     .forEach(r => {
-      ul.innerHTML += `<li>${r.usuario}: "${r.comentario}" ⭐${r.calificacion}</li>`;
+      const usuario = usuarios.find(u => u.nombre.toLowerCase() === r.usuario.toLowerCase());
+      const usuarioDisplay = usuario ? `(${usuario.id}) ${r.usuario}` : r.usuario;
+
+      ul.innerHTML += `<li><b>${usuarioDisplay}</b>: "${r.comentario}" ⭐${r.calificacion}</li>`;
     });
+}
+
+function filtrarPorFecha() {
+  const fechaInicioStr = document.getElementById("fechaInicio").value;
+  const fechaFinStr = document.getElementById("fechaFin").value;
+  const ul = document.getElementById("resultadoFechas");
+
+  if (!ul) return;
+  ul.innerHTML = "";
+
+  if (!fechaInicioStr || !fechaFinStr) {
+    ul.innerHTML = "<li>Por favor, selecciona una fecha de inicio y de fin.</li>";
+    return;
+  }
+
+  // Ajustar la fecha de fin para que incluya todo el día
+  const fechaInicio = new Date(fechaInicioStr);
+  const fechaFin = new Date(fechaFinStr);
+  fechaFin.setHours(23, 59, 59, 999);
+
+  const reseñas = JSON.parse(localStorage.getItem("reseñas")) || [];
+  const lugares = JSON.parse(localStorage.getItem("lugares")) || [];
+
+  const filtradas = reseñas.filter(r => {
+    if (!r.fecha) return false;
+    const fechaReseña = new Date(r.fecha);
+    return fechaReseña >= fechaInicio && fechaReseña <= fechaFin;
+  });
+
+  filtradas.forEach(r => {
+    const lugar = lugares.find(l => l.id === r.idLugar);
+    ul.innerHTML += `<li><b>${r.usuario}</b> en <b>${lugar?.nombre || 'N/A'}</b> (${new Date(r.fecha).toLocaleDateString()}): "${r.comentario}" ⭐${r.calificacion}</li>`;
+  });
 }
 
 function editarReseñaGlobal(idx) {
@@ -426,7 +478,7 @@ function editarReseñaGlobal(idx) {
   const nuevoComentario = prompt("Nuevo comentario:", r.comentario) ?? r.comentario;
   const nuevaCalif = parseInt(prompt("Nueva calificación (1-5):", r.calificacion)) || r.calificacion;
 
-  reseñasCache[idx] = { ...r, comentario: nuevoComentario, calificacion: nuevaCalif };
+  reseñasCache[idx] = { ...r, comentario: nuevoComentario, calificacion: nuevaCalif, fecha: r.fecha }; // Preservar fecha
   localStorage.setItem("reseñas", JSON.stringify(reseñasCache));
   listarGlobal();
 }
@@ -436,6 +488,71 @@ function eliminarReseñaGlobal(idx) {
   reseñasCache.splice(idx, 1);
   localStorage.setItem("reseñas", JSON.stringify(reseñasCache));
   listarGlobal();
+}
+
+/* ========= NAVEGACIÓN POR LUGAR EN REPORTES ========= */
+
+function iniciarNavegacionPorLugar() {
+  const navContainer = document.getElementById("navegacionPorLugar");
+  if (!navContainer) return;
+
+  const categorias = JSON.parse(localStorage.getItem("categorias")) || [];
+
+  let html = "<h4>Categorías</h4><div>";
+  categorias.forEach(cat => {
+    // Usamos comillas simples y dobles para pasar el string de forma segura
+    html += `<button onclick="mostrarLugaresReportes('${cat}')">${cat}</button>`;
+  });
+  html += "</div>";
+
+  navContainer.innerHTML = html;
+}
+
+function mostrarLugaresReportes(categoria) {
+  const lugaresContainer = document.getElementById("lugaresReportesContainer");
+  const reseñasContainer = document.getElementById("reseñasReportesContainer");
+  if (!lugaresContainer || !reseñasContainer) return;
+
+  // Limpiamos las reseñas anteriores al elegir una nueva categoría
+  reseñasContainer.innerHTML = "";
+
+  const lugares = JSON.parse(localStorage.getItem("lugares")) || [];
+  const filtrados = lugares.filter(l => l.categoria === categoria);
+
+  let html = `<h4>Lugares de "${categoria}"</h4><div>`;
+  filtrados.forEach(lugar => {
+    html += `<button onclick="mostrarReseñasReportes(${lugar.id}, '${lugar.nombre}')">${lugar.nombre}</button>`;
+  });
+  html += "</div>";
+
+  lugaresContainer.innerHTML = html;
+}
+
+function mostrarReseñasReportes(lugarId, lugarNombre) {
+  const reseñasContainer = document.getElementById("reseñasReportesContainer");
+  if (!reseñasContainer) return;
+
+  const reseñas = JSON.parse(localStorage.getItem("reseñas")) || [];
+  // Guardamos el índice original para los botones de editar/eliminar
+  const reseñasConIndice = reseñas.map((r, index) => ({ ...r, originalIndex: index }));
+  const filtradas = reseñasConIndice.filter(r => r.idLugar === lugarId);
+
+  let html = `<h4>Reseñas de "${lugarNombre}"</h4>`;
+
+  if (filtradas.length === 0) {
+    html += "<p>Este lugar aún no tiene reseñas.</p>";
+  } else {
+    html += "<ul>";
+    filtradas.forEach(r => {
+      const fechaFormateada = r.fecha ? new Date(r.fecha).toLocaleDateString() : 'Sin fecha';
+      html += `<li><b>${r.usuario}</b> (${fechaFormateada}): "${r.comentario}" ⭐${r.calificacion}
+        <button onclick="editarReseñaGlobal(${r.originalIndex})">Editar</button>
+        <button onclick="eliminarReseñaGlobal(${r.originalIndex})">Eliminar</button>
+      </li>`;
+    });
+    html += "</ul>";
+  }
+  reseñasContainer.innerHTML = html;
 }
 
 /* ========= DISPATCH ========= */
@@ -453,6 +570,98 @@ window.onload = () => {
       return;
     }
     listarGlobal();
+    iniciarNavegacionPorLugar();
   }
   if (path.endsWith("index.html")) seedIfNeeded();
+// =====================
+// 1) Buscar por PK (lugares)
+// =====================
+function buscarLugarPorPk(idBuscado) {
+  const lugares = JSON.parse(localStorage.getItem("lugares")) || [];
+  const lugar = lugares.find(l => l.id === Number(idBuscado));
+  return lugar || null;
+}
+
+// Esta es solo para usarla desde el botón del HTML
+function buscarLugarPorIdDesdeVista() {
+  const input = document.getElementById("buscarLugarId");
+  const salida = document.getElementById("resultadoLugar");
+  if (!input || !salida) return;
+
+  const id = input.value;
+  const lugar = buscarLugarPorPk(id);
+
+  if (!lugar) {
+    salida.innerText = "No se encontró un lugar con ese ID.";
+  } else {
+    salida.innerHTML = `<b>ID:</b> ${lugar.id} - <b>Nombre:</b> ${lugar.nombre} - <b>Categoría:</b> ${lugar.categoria}`;
+  }
+}
+
+// =====================
+// 2) Buscar y listar un registro específico (usuario + sus reseñas)
+//    Esto reemplaza al buscarPorUsuario() viejo si quieres,
+//    pero si no, lo puedes dejar con este nombre nuevo.
+// =====================
+function buscarYListarUsuario() {
+  const input = document.getElementById("buscarUsuario").value.trim().toLowerCase();
+  const salida = document.getElementById("resultadoBusqueda");
+
+  const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+  const reseñas = JSON.parse(localStorage.getItem("reseñas")) || [];
+  const lugares = JSON.parse(localStorage.getItem("lugares")) || [];
+
+  // buscar por nombre exacto o por id
+  const usuario = usuarios.find(u =>
+    u.nombre.toLowerCase() === input || String(u.id) === input
+  );
+
+  if (!usuario) {
+    salida.innerHTML = "No se encontró el usuario.";
+    return;
+  }
+
+  const reseñasDelUsuario = reseñas.filter(r => r.usuario.toLowerCase() === usuario.nombre.toLowerCase());
+
+  let html = `<b>Usuario:</b> ${usuario.nombre} (ID: ${usuario.id})<br>`;
+  if (reseñasDelUsuario.length === 0) {
+    html += "Este usuario no tiene reseñas.";
+  } else {
+    html += "<ul>";
+    reseñasDelUsuario.forEach(r => {
+      const lugar = lugares.find(l => l.id === r.idLugar);
+      html += `<li>"${r.comentario}" en ${lugar ? lugar.nombre : "N/A"} ⭐${r.calificacion}</li>`;
+    });
+    html += "</ul>";
+  }
+
+  salida.innerHTML = html;
+}
+
+// =====================
+// 3) Listar datos de 2 tablas relacionadas (reseñas + lugares)
+//    Si quieres usar esta en vez de listarGlobal(), la llamas en reportes.html
+// =====================
+function listarReseñasConLugar() {
+  const reseñas = JSON.parse(localStorage.getItem("reseñas")) || [];
+  const lugares = JSON.parse(localStorage.getItem("lugares")) || [];
+
+  const contenedor = document.getElementById("listadoGlobal");
+  const totalReseñasEl = document.getElementById("totalReseñas");
+
+  if (totalReseñasEl) totalReseñasEl.innerText = reseñas.length;
+  if (!contenedor) return;
+
+  contenedor.innerHTML = "";
+
+  reseñas.forEach(r => {
+    const lugar = lugares.find(l => l.id === r.idLugar);
+    const nombreLugar = lugar ? lugar.nombre : "Lugar desconocido";
+
+    const li = document.createElement("li");
+    li.innerHTML = `<b>${r.usuario}</b> reseñó <b>${nombreLugar}</b>: "${r.comentario}" ⭐${r.calificacion}`;
+    contenedor.appendChild(li);
+  });
+}
+
 };

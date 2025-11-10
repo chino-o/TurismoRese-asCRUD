@@ -2,25 +2,40 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Base de Datos (Admin)</title>
+  <title>BD Admin</title>
 </head>
 <body>
-  <h2>Base de Datos (Admin)</h2>
+  <h2>Base de datos (Admin)</h2>
   <p id="usuarioActivo"></p>
 
-  <h3>Todas las reseñas</h3>
+  <h3>Todas las reseñas (<span id="totalReseñas">0</span>)</h3>
   <ul id="listadoGlobal"></ul>
 
-  <h3>Buscar reseña por usuario</h3>
-  <input type="text" id="buscarUsuario" placeholder="Nombre de usuario">
+  <h3>Buscar reseñas por ID o Usuario</h3>
+  <input type="text" id="buscarUsuario" placeholder="ID o Usuario">
   <button onclick="buscarPorUsuario()">Buscar</button>
   <p id="resultadoBusqueda"></p>
 
-  <h3>Filtrar reseñas por rango</h3>
+  <h3>Filtrar reseñas por rango de calificación</h3>
   <input type="number" id="min" placeholder="Min (1-5)">
   <input type="number" id="max" placeholder="Max (1-5)">
   <button onclick="filtrarRango()">Filtrar</button>
   <ul id="resultadoRango"></ul>
+
+  <h3>Buscar reseñas por Lugar</h3>
+  <div id="navegacionPorLugar">
+    <!-- Contenido generado por JS -->
+  </div>
+  <div id="lugaresReportesContainer" style="margin-top: 10px;"></div>
+  <div id="reseñasReportesContainer" style="margin-top: 10px;"></div>
+
+  <h3>Filtrar reseñas por rango de fechas</h3>
+  <label for="fechaInicio">Desde:</label>
+  <input type="date" id="fechaInicio">
+  <label for="fechaFin">Hasta:</label>
+  <input type="date" id="fechaFin">
+  <button onclick="filtrarPorFecha()">Filtrar por Fecha</button>
+  <ul id="resultadoFechas"></ul>
 
   <p>
     <button onclick="irCategorias()">← Volver</button>
