@@ -2,32 +2,53 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Autores - Reseñas Turísticas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 20px;
+      display: flex; justify-content: center; align-items: flex-start; min-height: 100vh;
+    }
+    .container {
+      background: #fff; padding: 25px 40px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      max-width: 800px; width: 100%; text-align: center;
+    }
+    h2 { color: #0056b3; }
+    .autores-grid {
+      display: flex; justify-content: space-around; text-align: center; gap: 20px; flex-wrap: wrap;
+    }
+    .autor {
+      margin-bottom: 20px;
+    }
+    .autor img {
+      width: 150px; height: 150px; object-fit: cover; border-radius: 50%; border: 3px solid #007bff;
+    }
+    .autor p { font-weight: bold; margin-top: 10px; }
+    button {
+      padding: 10px 20px; background-color: #6c757d; color: white; border: none;
+      border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 20px;
+    }
+    button:hover { background-color: #5a6268; }
+  </style>
 </head>
 <body>
-  <h2>Autores</h2>
-  <!-- Contenedor principal para alinear a los autores -->
-  <div style="display: flex; justify-content: space-around; text-align: center; gap: 20px;">
-    <!-- Autor 1 -->
-    <div>
-      <img src="iconos/javier_polanco.jpg" alt="Foto de Javier Polanco" style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px;">
-      <p>Javier Polanco</p>
+  <div class="container">
+    <h2>Autores</h2>
+    <div class="autores-grid">
+      <div class="autor">
+        <img src="iconos/javier_polanco.jpg" alt="Foto de Javier Polanco">
+        <p>Javier Polanco</p>
+      </div>
+      <div class="autor">
+        <img src="iconos/yo.jpg" alt="Foto de Luciano Gonzalez">
+        <p>Luciano Gonzalez</p>
+      </div>
+      <div class="autor">
+        <img src="iconos/cris_vidal.jpg" alt="Foto de Cristobal Vidal">
+        <p>Cristobal Vidal</p>
+      </div>
     </div>
-    <!-- Autor 2 -->
-    <div>
-      <img src="iconos/yo.jpg" alt="Foto de Luciano Gonzalez" style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px;">
-      <p>Luciano Gonzalez</p>
-    </div>
-    <!-- Autor 3 -->
-    <div>
-      <img src="iconos/cris_vidal.jpg" alt="Foto de Cristobal Vidal" style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px;">
-      <p>Cristobal Vidal</p>
-    </div>
-  </div>
-
-  <p>
     <a href="index.html"><button>← Volver al inicio</button></a>
-  </p>
-
+  </div>
 </body>
 </html>

@@ -2,28 +2,74 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reseñas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 20px;
+      display: flex; justify-content: center; align-items: flex-start; min-height: 100vh;
+    }
+    .container {
+      background: #fff; padding: 25px 40px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      max-width: 800px; width: 100%;
+    }
+    h2, h3 { color: #0056b3; text-align: center; }
+    #usuarioActivo { color: #6c757d; text-align: center; margin-bottom: 20px; }
+    .form-reseña { margin-bottom: 30px; }
+    input[type="text"], input[type="number"] {
+      width: calc(100% - 22px); padding: 10px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ddd;
+    }
+    button {
+      padding: 10px 20px; background-color: #007bff; color: white; border: none;
+      border-radius: 5px; cursor: pointer; font-size: 16px; margin: 5px;
+    }
+    button:hover { background-color: #0056b3; }
+    .btn-full { width: 100%; }
+    ul { list-style-type: none; padding: 0; }
+    li {
+      background: #e9ecef; padding: 15px; border-left: 5px solid #007bff; margin-bottom: 10px;
+      border-radius: 5px;
+    }
+    li button { font-size: 12px; padding: 5px 10px; background-color: #6c757d; }
+    li button:hover { background-color: #5a6268; }
+    .resumen { background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; margin-top: 20px; }
+    .footer-buttons { margin-top: 30px; text-align: center; }
+    .btn-secondary { background-color: #6c757d; }
+    .btn-secondary:hover { background-color: #5a6268; }
+    .btn-logout { background-color: #dc3545; }
+    .btn-logout:hover { background-color: #c82333; }
+  </style>
 </head>
 <body>
-  <h2 id="tituloLugar">Reseñas</h2>
-  <p id="usuarioActivo"></p>
+  <div class="container">
+    <h2 id="tituloLugar">Reseñas</h2>
+    <p id="usuarioActivo"></p>
 
-  <h3>Agregar reseña</h3>
-  <input type="text" id="comentario" placeholder="Comentario">
-  <input type="number" id="calificacion" placeholder="Calificación (1-5)" min="1" max="5">
-  <button onclick="agregarReseña()">Guardar reseña</button>
+    <div class="form-reseña">
+      <h3>Agregar reseña</h3>
+      <input type="text" id="comentario" placeholder="Escribe tu comentario aquí...">
+      <input type="number" id="calificacion" placeholder="Calificación (1-5)" min="1" max="5">
+      <button onclick="agregarReseña()" class="btn-full">Guardar reseña</button>
+    </div>
 
-  <h3>Reseñas guardadas</h3>
-  <ul id="listaReseñas"></ul>
+    <hr>
 
-  <h3>Resumen</h3>
-  <p id="promedio"></p>
-  <p id="conteo"></p>
+    <h3>Reseñas guardadas</h3>
+    <ul id="listaReseñas">
+      <!-- Las reseñas se cargarán aquí -->
+    </ul>
 
-  <p>
-    <button onclick="irCategorias()">← Volver a categorías</button>
-    <button onclick="cerrarSesion()">Cerrar sesión</button>
-  </p>
+    <div class="resumen">
+      <h3>Resumen del Lugar</h3>
+      <p id="promedio">Promedio de calificaciones: Calculando...</p>
+      <p id="conteo">Total de reseñas: Calculando...</p>
+    </div>
+
+    <div class="footer-buttons">
+      <button onclick="irCategorias()" class="btn-secondary">← Volver a categorías</button>
+      <button onclick="cerrarSesion()" class="btn-logout">Cerrar sesión</button>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>

@@ -2,29 +2,49 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Inicio - Reseñas Turísticas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 20px;
+      display: flex; justify-content: center; align-items: center; min-height: 100vh;
+    }
+    .container {
+      background: #fff; padding: 25px 40px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      max-width: 400px; width: 100%; text-align: center;
+    }
+    h1, h2 { color: #0056b3; }
+    label { display: block; text-align: left; margin-bottom: 5px; font-weight: bold; }
+    input[type="text"], input[type="password"] {
+      width: calc(100% - 22px); padding: 10px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ddd;
+    }
+    button {
+      width: 100%; padding: 12px; background-color: #007bff; color: white; border: none;
+      border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px;
+    }
+    button:hover { background-color: #0056b3; }
+    .btn-secondary { background-color: #6c757d; }
+    .btn-secondary:hover { background-color: #5a6268; }
+    p { margin-top: 20px; }
+    a { color: #007bff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
-  <h2>Inicio de sesión</h2>
-  <form onsubmit="iniciarSesion(); return false;">
-    <div>
+  <div class="container">
+    <h2>Inicio de sesión</h2>
+    <form onsubmit="iniciarSesion(); return false;">
       <label for="nombreUsuario">Usuario:</label>
-      <input type="text" id="nombreUsuario" placeholder=" Tu usuario" required>
-    </div>
-    <div>
+      <input type="text" id="nombreUsuario" placeholder="Tu usuario" required>
+      
       <label for="claveUsuario">Contraseña:</label>
       <input type="password" id="claveUsuario" placeholder="Tu contraseña" required>
-    </div>
-    <div style="margin-top: 10px;">
+      
       <button type="submit">Entrar</button>
-    </div>
-  </form>
-
-  <hr>
-
-  <p>¿No tienes cuenta? <a href="registro.html">Regístrate aquí</a>.</p>
-  
-  <p><a href="autores.html"><button>Ver Autores</button></a></p>
+    </form>
+    <p>¿No tienes cuenta? <a href="registro.html">Regístrate aquí</a>.</p>
+    <a href="autores.html"><button class="btn-secondary">Ver Autores</button></a>
+  </div>
 
   <script src="script.js"></script>
 </body>

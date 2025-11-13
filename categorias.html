@@ -2,24 +2,56 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Categorías y Lugares</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 20px;
+      display: flex; justify-content: center; align-items: flex-start; min-height: 100vh;
+    }
+    .container {
+      background: #fff; padding: 25px 40px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      max-width: 800px; width: 100%; text-align: center;
+    }
+    h2, h3 { color: #0056b3; }
+    #usuarioActivo { color: #6c757d; margin-bottom: 20px; }
+    #listaCategorias button, #listaLugares button {
+      width: 100%; padding: 12px; margin-bottom: 10px; background-color: #007bff; color: white;
+      border: none; border-radius: 5px; cursor: pointer; font-size: 16px;
+    }
+    #listaCategorias button:hover, #listaLugares button:hover { background-color: #0056b3; }
+    .footer-buttons { margin-top: 30px; }
+    .footer-buttons button {
+      padding: 10px 20px; font-size: 16px; border-radius: 5px; cursor: pointer; border: none; color: white;
+    }
+    #btnReportes { background-color: #17a2b8; }
+    #btnReportes:hover { background-color: #138496; }
+    .btn-logout { background-color: #dc3545; }
+    .btn-logout:hover { background-color: #c82333; }
+  </style>
 </head>
 <body>
-  <h2>Categorías</h2>
-  <p id="usuarioActivo"></p>
+  <div class="container">
+    <h2>Categorías</h2>
+    <p id="usuarioActivo"></p>
 
-  <div id="listaCategorias"></div>
+    <div id="listaCategorias">
+      <!-- Botones de categorías se generan aquí -->
+    </div>
 
-  <hr>
+    <hr style="margin: 20px 0;">
 
-  <h3 id="tituloLugares"></h3>
-  <div id="listaLugares"></div>
+    <h3 id="tituloLugares">Selecciona una categoría para ver los lugares</h3>
+    <div id="listaLugares">
+      <!-- Botones de lugares se generan aquí -->
+    </div>
 
-  <p>
-    <!-- Este botón lo controlamos por JS: solo admin lo ve -->
-    <button id="btnReportes">Base de datos (BD)</button>
-    <button onclick="cerrarSesion()">Cerrar sesión</button>
-  </p>
+    <div class="footer-buttons">
+      <!-- Este botón lo controlamos por JS: solo admin lo ve -->
+      <button id="btnReportes" style="display: none;">Base de datos (BD)</button>
+      <button onclick="cerrarSesion()" class="btn-logout">Cerrar sesión</button>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>

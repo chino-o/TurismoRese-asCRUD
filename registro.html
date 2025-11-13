@@ -2,23 +2,46 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registro - Reseñas Turísticas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 20px;
+      display: flex; justify-content: center; align-items: center; min-height: 100vh;
+    }
+    .container {
+      background: #fff; padding: 25px 40px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      max-width: 400px; width: 100%; text-align: center;
+    }
+    h2 { color: #0056b3; }
+    label { display: block; text-align: left; margin-bottom: 5px; font-weight: bold; }
+    input[type="text"], input[type="password"] {
+      width: calc(100% - 22px); padding: 10px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ddd;
+    }
+    button {
+      width: 100%; padding: 12px; background-color: #007bff; color: white; border: none;
+      border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px;
+    }
+    button:hover { background-color: #0056b3; }
+    p { margin-top: 20px; }
+    a { color: #007bff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
-  <h2>¿No tienes cuenta? Regístrate</h2>
-  <form onsubmit="registrarUsuario(); return false;">
-    <div>
+  <div class="container">
+    <h2>¿No tienes cuenta? Regístrate</h2>
+    <form onsubmit="registrarUsuario(); return false;">
       <label for="nuevoUsuario">Nuevo Usuario:</label>
       <input type="text" id="nuevoUsuario" placeholder="Elige un nombre de usuario" required>
-    </div>
-    <div>
+      
       <label for="nuevaClave">Nueva Contraseña:</label>
       <input type="password" id="nuevaClave" placeholder="Elige una contraseña" required>
-    </div>
-    <button type="submit">Registrar</button>
-  </form>
-
-  <p><a href="index.html">¿Ya tienes cuenta? Inicia sesión</a></p>
+      
+      <button type="submit">Registrar</button>
+    </form>
+    <p><a href="index.html">¿Ya tienes cuenta? Inicia sesión</a></p>
+  </div>
 
   <script src="script.js"></script>
 </body>
