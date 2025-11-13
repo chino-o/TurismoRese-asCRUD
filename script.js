@@ -76,22 +76,29 @@ function registrarUsuario() {
   }
 
   const usuarios = normalizeUsuariosIds();
-  const usuarioExiste = usuarios.some(u => u.nombre === nuevoUsuario);
+  
+  // === INICIO DE NUEVA LÓGICA DE UNICIDAD CON SUFIJO (Matias, Matias_2, etc.) ===
+  let nombreUsuarioFinal = nuevoUsuario;
+  let indiceDuplicado = 1;
 
-  if (usuarioExiste) {
-    alert("El nombre de usuario ya existe. Por favor, elige otro.");
-    return;
+  // Chequeo insensible a mayúsculas/minúsculas para encontrar si el nombre base ya existe
+  while (usuarios.some(u => u.nombre.toLowerCase() === nombreUsuarioFinal.toLowerCase())) {
+      indiceDuplicado++;
+      // Si ya existe 'matias', el próximo será 'matias_2'
+      nombreUsuarioFinal = `${nuevoUsuario}_${indiceDuplicado}`;
   }
+  // === FIN DE NUEVA LÓGICA DE UNICIDAD CON SUFIJO ===
 
   const maxId = usuarios.reduce((max, u) => (typeof u.id === "number" && u.id > max ? u.id : max), 0);
   const nuevoId = maxId + 1;
+  
   usuarios.push({
     id: nuevoId,
-    nombre: nuevoUsuario,
+    nombre: nombreUsuarioFinal, // <--- Se usa el nombre final único
     clave: nuevaClave,
     fechaRegistro: new Date().toISOString() });
   localStorage.setItem("usuarios", JSON.stringify(usuarios));
-  alert("¡Registro exitoso! Ahora puedes iniciar sesión.");
+  alert(`¡Registro exitoso! Tu nombre de usuario es: ${nombreUsuarioFinal}. Ahora puedes iniciar sesión.`);
   document.getElementById("nuevoUsuario").value = "";
   document.getElementById("nuevaClave").value = "";
 }
