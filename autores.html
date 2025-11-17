@@ -22,6 +22,25 @@
     }
     .autor img {
       width: 150px; height: 150px; object-fit: cover; border-radius: 50%; border: 3px solid #007bff;
+      /* Animación de flotar */
+      animation: flotar 5s ease-in-out infinite;
+      transition: transform 0.3s ease;
+    }
+    .autor img:hover {
+      transform: scale(1.1);
+      animation-play-state: paused; /* Pausa la animación al pasar el mouse */
+    }
+    /* Definición de la animación para flotar */
+    @keyframes flotar {
+      0% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-8px);
+      }
+      100% {
+        transform: translateY(0px);
+      }
     }
     .autor p { font-weight: bold; margin-top: 10px; }
     button {
