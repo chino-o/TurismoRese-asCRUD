@@ -6,20 +6,27 @@
   <title>Categorías y Lugares</title>
   <style>
     body {
-      font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 20px;
-      display: flex; justify-content: center; align-items: flex-start; min-height: 100vh;
+      font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; margin: 0;
+      display: flex; flex-direction: column; align-items: center; min-height: 100vh;
     }
     .container {
+      flex: 1;
       background: #fff; padding: 25px 40px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       max-width: 800px; width: 100%; text-align: center;
     }
     h2, h3 { color: #0056b3; }
     #usuarioActivo { color: #6c757d; margin-bottom: 20px; }
     #listaCategorias button, #listaLugares button {
-      width: 100%; padding: 12px; margin-bottom: 10px; background-color: #007bff; color: white;
-      border: none; border-radius: 5px; cursor: pointer; font-size: 16px;
+      width: 100%; padding: 12px; margin-bottom: 10px; background-image: linear-gradient(to right, #007bff, #0056b3);
+      color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;
+      font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    #listaCategorias button:hover, #listaLugares button:hover { background-color: #0056b3; }
+    #listaCategorias button:hover, #listaLugares button:hover {
+      background-image: linear-gradient(to right, #0069d9, #004a99);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
     .footer-buttons { margin-top: 30px; }
     .footer-buttons button {
       padding: 10px 20px; font-size: 16px; border-radius: 5px; cursor: pointer; border: none; color: white;
@@ -31,7 +38,7 @@
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="container" style="margin: 20px;">
     <h2>Categorías</h2>
     <p id="usuarioActivo"></p>
 
@@ -50,6 +57,6 @@
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>

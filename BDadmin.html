@@ -35,7 +35,6 @@
     .btn-edit { background-color: #ffc107; color: #212529; }
     .btn-edit:hover { background-color: #e0a800; }
     
-    /* Estilos para la tabla de reseñas */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -57,18 +56,14 @@
     td button {
       font-size: 14px; padding: 5px 10px;
     }
-    /* Estilo para las tablas de resultados de búsqueda/filtro */
-    .results-table td button {
-      font-size: 14px; padding: 5px 10px;
-    }
     ul { padding-left: 20px; }
     .footer-buttons { text-align: center; margin-top: 20px; }
 
-    /* Grid para poner tablas lado a lado */
+    /* Grid para organizar las tablas principales */
     .grid-container {
       display: grid;
-      grid-template-columns: 2fr 1fr; /* La primera tabla ocupa el doble de espacio que la segunda */
-      gap: 25px; /* Espacio entre las tablas */
+      grid-template-columns: 2fr 1fr; 
+      gap: 25px; 
     }
   </style>
 </head>
@@ -78,6 +73,7 @@
     <p id="usuarioActivo"></p>
 
     <div class="grid-container">
+      
       <div class="section">
         <h3>Todas las reseñas (<span id="totalReseñas">0</span>)</h3>
         <table>
@@ -87,7 +83,7 @@
               <th>Usuario</th>
               <th>Lugar</th>
               <th>Comentario</th>
-              <th>Calificación</th>
+              <th>Calif.</th>
               <th>Fecha</th>
               <th>Acciones</th>
             </tr>
@@ -96,6 +92,7 @@
             </tbody>
         </table>
       </div>
+
       <div class="section">
         <h3>Usuarios Registrados (<span id="totalUsuarios">0</span>)</h3>
         <table>
@@ -103,21 +100,41 @@
             <tr>
               <th>ID</th>
               <th>Usuario</th>
-              <th>Fecha de Registro</th>
+              <th>Fecha Reg.</th>
             </tr>
           </thead>
-          <tbody id="listaUsuarios"></tbody>
+          <tbody id="listaUsuarios">
+             </tbody>
         </table>
       </div>
-    </div>
 
-    <div class="section">
+      <div class="section" style="grid-column: span 2;">
+        <h3>Administrar Lugares y Ubicaciones</h3>
+        
+        <button onclick="listarLugaresAdmin()" class="btn-secondary">🔄 Recargar</button>
+        <button onclick="crearLugar()" class="btn-edit" style="background-color: #28a745;">➕ Nuevo Lugar</button>
+
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Categoría</th>
+              <th>Ubicación</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="listaLugaresAdmin">
+            </tbody>
+        </table>
+      </div>
+
+    </div> <div class="section">
       <h3>Buscar reseñas por ID o Usuario</h3>
       <input type="text" id="buscarUsuario" placeholder="ID o Usuario">
       <button onclick="buscarPorUsuario()">Buscar</button>
       <table class="results-table">
-        <tbody id="resultadoBusqueda">
-          </tbody>
+        <tbody id="resultadoBusqueda"></tbody>
       </table>
     </div>
 
@@ -133,7 +150,7 @@
             <th>Usuario</th>
             <th>Lugar</th>
             <th>Comentario</th>
-            <th>Calificación</th>
+            <th>Calif.</th>
             <th>Fecha</th>
           </tr>
         </thead>
@@ -146,8 +163,7 @@
       <div id="navegacionPorLugar"></div>
       <div id="lugaresReportesContainer" style="margin-top: 10px;"></div>
       <table class="results-table" style="margin-top: 10px;">
-        <tbody id="reseñasReportesContainer">
-          </tbody>
+        <tbody id="reseñasReportesContainer"></tbody>
       </table>
     </div>
 
@@ -165,7 +181,7 @@
             <th>Usuario</th>
             <th>Lugar</th>
             <th>Comentario</th>
-            <th>Calificación</th>
+            <th>Calif.</th>
             <th>Fecha</th>
           </tr>
         </thead>
@@ -179,6 +195,6 @@
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
