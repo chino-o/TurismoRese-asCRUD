@@ -501,8 +501,13 @@ function crearFooter() {
   footer.style.width = "100%"; // Asegura que ocupe todo el ancho
 
   footer.innerHTML = `
-    <p>&copy; 2024 ReseñasCRUD. Todos los derechos reservados.</p>
-    <p>Dirección: C. Cuevas 70, 2840079 Rancagua, O'Higgins</p>
+    <p>&copy; 2025 ReseñasCRUD. Todos los derechos reservados.</p>
+    <p>Direccion:<br>
+      <a href="https://www.google.com/maps/place/AIEP+Rancagua/@-34.1699218,-70.7357336,17z/data=!3m1!4b1!4m6!3m5!1s0x96634342188fb3a1:0xc54017472f5d991d!8m2!3d-34.1699218!4d-70.7357336!16s%2Fg%2F1thtqs_f?entry=ttu" target="_blank" style="color: #fff; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: opacity 0.3s;">
+        <img src="iconos/aiep2.jpg" alt="Ubicación en Google Maps" style="width: 24px; height: 24px; vertical-align: middle;">
+        <span>C. Cuevas 70, 2840079 Rancagua, O'Higgins</span>
+      </a>
+    </p>
     <p>Contacto:<br><a href="mailto:javier.polancop@correoaiep.cl" style="color: #fff; text-decoration: none;">javier.polancop@correoaiep.cl</a><br><a href="mailto:luciano.gonzalezpe@correoaiep.cl" style="color: #fff; text-decoration: none;">luciano.gonzalezpe@correoaiep.cl</a></p>
   `;
 
