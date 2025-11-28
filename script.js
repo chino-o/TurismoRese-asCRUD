@@ -16,25 +16,30 @@ const DATOS_ACTUALIZADOS = [
   
   // Aire Libre
   { id: 10, nombre: "Parque Koke", categoria: "Aire Libre", ubicacion: "Sector Norte", foto: "lugaresimagenes/ParqueKoke.jpg" },
-  { id: 11, nombre: "Polideportivo Parque Lourdes", categoria: "Aire Libre", ubicacion: "Av. Diagonal Doñihue", foto: "lugaresimagenes/Polideportivo.jpg" }
+  { id: 11, nombre: "Polideportivo Parque Lourdes", categoria: "Aire Libre", ubicacion: "Av. Diagonal Doñihue", foto: "lugaresimagenes/Polideportivo.jpg" },
+
+  // Entretenimiento
+  { id: 12, nombre: "Kid Center", categoria: "Entretenimiento", ubicacion: "Miguel Ramírez 184, Rancagua", foto: "lugaresimagenes/KidCenter.jpg" },
+  { id: 13, nombre: "Pool Rancagua", categoria: "Entretenimiento", ubicacion: "Sta. María 320, Rancagua", foto: "lugaresimagenes/PoolRancagua.jpg" },
+  { id: 14, nombre: "Cinemark Open Plaza", categoria: "Entretenimiento", ubicacion: "Teniente Coronel José Bernardo Cuevas 405, Rancagua", foto: "lugaresimagenes/CineMarkOpenPlaza.jpg" }
 ];
 
-const SEED_CATEGORIAS = ["Cafeterías", "Librerías", "Aire Libre", "Cosas Geek", "Entretenimiento"];
+const SEED_CATEGORIAS = ["Cafeterías", "Librerías", "Aire Libre", "Entretenimiento"];
 
 // Clave para saber si ya actualizamos los datos nuevos
-const MIGRACION_KEY = "v5_lugares_con_fotos_local"; 
+const MIGRACION_KEY = "v8_fix_nombres_imagenes"; 
 
 async function seedIfNeeded() {
-  // 1. Guardar categorías en local
-  if (!localStorage.getItem("categorias")) {
-    localStorage.setItem("categorias", JSON.stringify(SEED_CATEGORIAS));
-  }
-
-  // 2. Actualizar Firebase con los lugares nuevos y sus fotos
+  // Si la migración más reciente ya se ejecutó, no hacemos nada.
   if (localStorage.getItem(MIGRACION_KEY)) return;
 
-  console.log("Iniciando actualización de lugares y fotos...");
+  console.log("Iniciando migración de datos (v8)...");
   try {
+    // 1. Forzamos la actualización de la lista de categorías en el navegador.
+    localStorage.setItem("categorias", JSON.stringify(SEED_CATEGORIAS));
+    console.log("Lista de categorías actualizada en localStorage.");
+
+    // 2. Actualizamos los lugares en Firebase.
     for (const lugar of DATOS_ACTUALIZADOS) {
       // Usamos 'merge: true' para actualizar nombre y foto sin borrar otros datos si existieran
       await setDoc(doc(db, "lugares", String(lugar.id)), lugar, { merge: true });
@@ -42,7 +47,7 @@ async function seedIfNeeded() {
     }
     localStorage.setItem(MIGRACION_KEY, "true");
     alert("¡Base de datos actualizada con los nuevos lugares y fotos!");
-  } catch (e) {
+  } catch (e) { 
     console.error("Error en migración:", e);
   }
 }
@@ -484,6 +489,71 @@ async function mostrarReseñasReportes(lid, lnom) {
   });
 }
 
+/* ========= GRÁFICO DE RESEÑAS (ADMIN) ========= */
+let miGrafico; // Variable global para guardar la instancia del gráfico
+
+async function mostrarGraficoReseñasPorLugar() {
+  const container = document.getElementById('graficoContainer');
+  if (!container) return;
+
+  // Si el gráfico ya está visible, lo ocultamos y terminamos.
+  if (container.style.display === 'block') {
+    container.style.display = 'none';
+    return;
+  }
+
+  // Si está oculto, lo mostramos y procedemos a generar el gráfico.
+  container.style.display = 'block';
+  const canvas = document.getElementById('graficoReseñas');
+  const ctx = canvas.getContext('2d');
+
+  try {
+    // 1. Obtener todos los lugares para mapear ID a Nombre
+    const lugaresSnap = await getDocs(collection(db, "lugares"));
+    const mapaLugares = {};
+    lugaresSnap.forEach(doc => {
+      const lugar = doc.data();
+      mapaLugares[lugar.id] = lugar.nombre;
+    });
+
+    // 2. Obtener todas las reseñas y contarlas por idLugar
+    const reseñasSnap = await getDocs(collection(db, "reseñas"));
+    const conteoReseñas = {};
+    reseñasSnap.forEach(doc => {
+      const reseña = doc.data();
+      const idLugar = reseña.idLugar;
+      conteoReseñas[idLugar] = (conteoReseñas[idLugar] || 0) + 1;
+    });
+
+    // 3. Preparar los datos para el gráfico
+    const labels = Object.keys(conteoReseñas).map(id => mapaLugares[id] || `Lugar ID: ${id}`);
+    const data = Object.values(conteoReseñas);
+
+    // 4. Si ya existe un gráfico, lo destruimos para crear uno nuevo
+    if (miGrafico) {
+      miGrafico.destroy();
+    }
+
+    // 5. Crear el nuevo gráfico de barras
+    miGrafico = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Cantidad de Reseñas',
+          data: data,
+          backgroundColor: 'rgba(54, 162, 235, 0.6)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1
+        }]
+      }
+    });
+  } catch (e) {
+    console.error("Error al generar el gráfico:", e);
+    container.innerHTML = "<p>Error al cargar los datos para el gráfico.</p>";
+  }
+}
+
 /* ========= FOOTER DINÁMICO ========= */
 function crearFooter() {
   // No agregar el footer en la página de administración
@@ -515,7 +585,7 @@ function crearFooter() {
 }
 
 /* ========= EXPORTS ========= */
-window.iniciarSesion=iniciarSesion; window.registrarUsuario=registrarUsuario; window.cerrarSesion=cerrarSesion; window.cargarCategorias=cargarCategorias; window.irCategorias=irCategorias; window.cargarReseñasPorLugar=cargarReseñasPorLugar; window.agregarReseña=agregarReseña; window.listarGlobal=listarGlobal; window.editarReseñaGlobal=editarReseñaGlobal; window.eliminarReseñaGlobal=eliminarReseñaGlobal; window.buscarPorUsuario=buscarPorUsuario; window.filtrarRango=filtrarRango; window.filtrarPorFecha=filtrarPorFecha; window.iniciarNavegacionPorLugar=iniciarNavegacionPorLugar; window.mostrarLugaresReportes=mostrarLugaresReportes; window.mostrarReseñasReportes=mostrarReseñasReportes; window.listarUsuariosRegistrados=listarUsuariosRegistrados; window.listarLugaresAdmin=listarLugaresAdmin; window.editarLugar=editarLugar; window.eliminarLugar=eliminarLugar; window.eliminarUsuario=eliminarUsuario; window.crearLugar=crearLugar; window.cambiarLugar=cambiarLugar; window.irAReseñas=irAReseñas; window.prepararCarrusel=prepararCarrusel;
+window.iniciarSesion=iniciarSesion; window.registrarUsuario=registrarUsuario; window.cerrarSesion=cerrarSesion; window.cargarCategorias=cargarCategorias; window.irCategorias=irCategorias; window.cargarReseñasPorLugar=cargarReseñasPorLugar; window.agregarReseña=agregarReseña; window.listarGlobal=listarGlobal; window.editarReseñaGlobal=editarReseñaGlobal; window.eliminarReseñaGlobal=eliminarReseñaGlobal; window.buscarPorUsuario=buscarPorUsuario; window.filtrarRango=filtrarRango; window.filtrarPorFecha=filtrarPorFecha; window.iniciarNavegacionPorLugar=iniciarNavegacionPorLugar; window.mostrarLugaresReportes=mostrarLugaresReportes; window.mostrarReseñasReportes=mostrarReseñasReportes; window.listarUsuariosRegistrados=listarUsuariosRegistrados; window.listarLugaresAdmin=listarLugaresAdmin; window.editarLugar=editarLugar; window.eliminarLugar=eliminarLugar; window.eliminarUsuario=eliminarUsuario; window.crearLugar=crearLugar; window.cambiarLugar=cambiarLugar; window.irAReseñas=irAReseñas; window.prepararCarrusel=prepararCarrusel; window.mostrarGraficoReseñasPorLugar=mostrarGraficoReseñasPorLugar;
 
 /* ========= DISPATCH ========= */
 window.onload = () => {

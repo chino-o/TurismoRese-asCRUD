@@ -9,7 +9,10 @@
       font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 20px;
     }
     .container {
-      background: #fff; padding: 25px 40px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      background: #fff; 
+      padding: 25px 40px; 
+      border-radius: 8px; 
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       max-width: 1200px; margin: auto;
     }
     h2, h3 { color: #0056b3; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; }
@@ -66,6 +69,8 @@
       gap: 25px; 
     }
   </style>
+  <!-- 1. Añadimos la librería para gráficos (Chart.js) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div class="container">
@@ -113,6 +118,7 @@
         
         <button onclick="listarLugaresAdmin()" class="btn-secondary">🔄 Recargar</button>
         <button onclick="crearLugar()" class="btn-edit" style="background-color: #28a745;">➕ Nuevo Lugar</button>
+        <button onclick="mostrarGraficoReseñasPorLugar()">📊 Ver Gráfico</button>
 
         <table>
           <thead>
@@ -127,6 +133,12 @@
           <tbody id="listaLugaresAdmin">
             </tbody>
         </table>
+
+        <!-- 2. Contenedor para el gráfico -->
+        <div id="graficoContainer" style="margin-top: 20px; display: none;">
+          <h3>Cantidad de Reseñas por Lugar</h3>
+          <canvas id="graficoReseñas"></canvas>
+        </div>
       </div>
 
     </div> <div class="section">
