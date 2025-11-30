@@ -237,20 +237,21 @@ async function listarLugaresAdmin() {
   const tbody = document.getElementById("listaLugaresAdmin");
   if(!tbody) return;
   tbody.innerHTML = "<tr><td colspan='5'>Cargando...</td></tr>";
-  
+
   const snap = await getDocs(collection(db, "lugares"));
   let arr = [];
   snap.forEach(d => arr.push({ uid: d.id, ...d.data() }));
   arr.sort((a,b) => (a.id || 9999) - (b.id || 9999));
 
   tbody.innerHTML = "";
+  let contador = 1; // 1. Inicia el contador para el ID secuencial
   arr.forEach(l => {
     // Previsualización pequeña de la imagen en la tabla admin
     const imgSmall = l.foto ? `<img src="${l.foto}" style="width:30px; height:30px; object-fit:cover;">` : '';
 
     tbody.innerHTML += `
-      <tr>
-        <td>${l.id || '-'}</td>
+      <tr data-id-real="${l.uid}">
+        <td>${contador}</td>
         <td>${l.nombre} <br> ${imgSmall}</td>
         <td>${l.categoria}</td>
         <td>${l.ubicacion || '-'}</td>
@@ -259,6 +260,7 @@ async function listarLugaresAdmin() {
             <button class="btn-danger" onclick="eliminarLugar('${l.uid}', '${l.nombre}')">Eliminar</button>
         </td>
       </tr>`;
+    contador++; // 2. Incrementa el contador para la siguiente fila
   });
 }
 
@@ -316,16 +318,23 @@ async function listarUsuariosRegistrados() {
   const totalEl = document.getElementById("totalUsuarios");
   if(!tbody) return;
   const snap = await getDocs(collection(db, "usuarios"));
+  let usuarios = [];
+  snap.forEach(d => usuarios.push({ uid: d.id, ...d.data() }));
+  // Ordenamos los usuarios por su idNum para que se muestren en orden
+  usuarios.sort((a, b) => (a.idNum || 0) - (b.idNum || 0));
+
   tbody.innerHTML = "";
-  let c = 0;
-  snap.forEach(d => {
-    c++;
-    const u = d.data();
-    let btn = `<button class="btn-danger" onclick="eliminarUsuario('${d.id}', '${u.nombre}')">X</button>`;
+  usuarios.forEach(u => {
+    let btn = `<button class="btn-danger" onclick="eliminarUsuario('${u.uid}', '${u.nombre}')">X</button>`;
     if(u.nombre.toLowerCase() === "admin") btn = "";
-    tbody.innerHTML += `<tr><td>${u.idNum || d.id}</td><td>${u.nombre}</td><td>${u.fechaRegistro?new Date(u.fechaRegistro).toLocaleDateString():'-'}</td><td style='text-align:center'>${btn}</td></tr>`;
+    tbody.innerHTML += `<tr data-id-real="${u.uid}">
+                          <td>${u.idNum || '-'}</td>
+                          <td>${u.nombre}</td>
+                          <td>${u.fechaRegistro?new Date(u.fechaRegistro).toLocaleDateString():'-'}</td>
+                          <td style='text-align:center'>${btn}</td>
+                        </tr>`;
   });
-  if(totalEl) totalEl.innerText = c;
+  if(totalEl) totalEl.innerText = usuarios.length;
 }
 
 async function eliminarUsuario(uid, nombre) {
@@ -340,19 +349,34 @@ async function listarGlobal() {
   const totalEl = document.getElementById("totalReseñas");
   if(!tbody) return;
   const snap = await getDocs(collection(db, "reseñas"));
+  
+  // Mapeos para obtener nombres de lugares e ID de usuarios
   const snapLug = await getDocs(collection(db, "lugares"));
-  const mapa = {};
-  snapLug.forEach(d => mapa[d.data().id] = d.data().nombre);
+  const mapaLugares = {};
+  snapLug.forEach(d => mapaLugares[d.data().id] = d.data().nombre);
+
+  const snapUsuarios = await getDocs(collection(db, "usuarios"));
+  const mapaUsuarios = {};
+  snapUsuarios.forEach(d => mapaUsuarios[d.data().nombre.toLowerCase()] = d.data().idNum);
 
   tbody.innerHTML = "";
-  let c = 0;
+  let totalReseñas = 0;
   snap.forEach(d => {
-    c++;
+    totalReseñas++;
     const r = d.data();
-    const nombreLugar = mapa[r.idLugar] || r.idLugar;
-    tbody.innerHTML += `<tr><td><small>${d.id}</small></td><td>${r.usuario}</td><td>${nombreLugar}</td><td>${r.comentario}</td><td>⭐${r.calificacion}</td><td>${r.fecha?new Date(r.fecha).toLocaleDateString():'-'}</td><td><button class="btn-edit" onclick="editarReseñaGlobal('${d.id}')">Edit</button><button class="btn-danger" onclick="eliminarReseñaGlobal('${d.id}')">X</button></td></tr>`;
+    const nombreLugar = mapaLugares[r.idLugar] || r.idLugar;
+    const idUsuario = mapaUsuarios[r.usuario.toLowerCase()] || '-'; // Obtenemos el idNum del usuario
+    tbody.innerHTML += `<tr data-id-real="${d.id}">
+                          <td>${idUsuario}</td>
+                          <td>${r.usuario}</td>
+                          <td>${nombreLugar}</td>
+                          <td>${r.comentario}</td>
+                          <td>⭐${r.calificacion}</td>
+                          <td>${r.fecha?new Date(r.fecha).toLocaleDateString():'-'}</td>
+                          <td><button class="btn-edit" onclick="editarReseñaGlobal('${d.id}')">Edit</button><button class="btn-danger" onclick="eliminarReseñaGlobal('${d.id}')">X</button></td>
+                        </tr>`;
   });
-  if(totalEl) totalEl.innerText = c;
+  if(totalEl) totalEl.innerText = totalReseñas;
 }
 
 async function editarReseñaGlobal(id) {
@@ -411,14 +435,20 @@ async function buscarPorUsuario() {
   uSnap.forEach(d => { const u=d.data(); if(String(u.idNum)===inp || u.nombre.toLowerCase().includes(inp)) names.push(u.nombre.toLowerCase()); });
   const rSnap = await getDocs(collection(db, "reseñas"));
   const lSnap = await getDocs(collection(db, "lugares"));
-  const lMap = {}; lSnap.forEach(d => lMap[d.data().id]=d.data().nombre);
+  const lMap = {}; lSnap.forEach(d => lMap[d.data().id]=d.data().nombre); // Mapa de lugares
+  const uMap = {}; uSnap.forEach(d => uMap[d.data().nombre.toLowerCase()] = d.data().idNum); // Mapa de usuarios
+
   tbody.innerHTML = "";
   let found = false;
   rSnap.forEach(d => {
     const r = d.data();
     if(names.includes(r.usuario.toLowerCase()) || r.usuario.toLowerCase().includes(inp)) {
       found = true;
-      tbody.innerHTML += `<tr><td>${d.id}</td><td>${r.usuario}</td><td>${lMap[r.idLugar]||r.idLugar}</td><td>${r.comentario}</td><td>⭐${r.calificacion}</td><td>${r.fecha?new Date(r.fecha).toLocaleDateString():'-'}</td></tr>`;
+      const idUsuario = uMap[r.usuario.toLowerCase()] || '-';
+      tbody.innerHTML += `<tr data-id-real="${d.id}">
+                            <td>${idUsuario}</td>
+                            <td>${r.usuario}</td><td>${lMap[r.idLugar]||r.idLugar}</td><td>${r.comentario}</td><td>⭐${r.calificacion}</td><td>${r.fecha?new Date(r.fecha).toLocaleDateString():'-'}</td>
+                          </tr>`;
     }
   });
   if(!found) tbody.innerHTML="<tr><td colspan='6'>Sin resultados</td></tr>";
@@ -430,14 +460,21 @@ async function filtrarRango() {
   tbody.innerHTML="<tr><td colspan='6'>Filtrando...</td></tr>";
   const rSnap = await getDocs(collection(db, "reseñas"));
   const lSnap = await getDocs(collection(db, "lugares"));
+  const uSnap = await getDocs(collection(db, "usuarios"));
   const lMap = {}; lSnap.forEach(d => lMap[d.data().id]=d.data().nombre);
+  const uMap = {}; uSnap.forEach(d => uMap[d.data().nombre.toLowerCase()] = d.data().idNum);
+
   tbody.innerHTML = "";
+  let found = false;
   rSnap.forEach(d => {
     const r = d.data();
     if(r.calificacion>=min && r.calificacion<=max) {
-      tbody.innerHTML += `<tr><td>${d.id}</td><td>${r.usuario}</td><td>${lMap[r.idLugar]||r.idLugar}</td><td>${r.comentario}</td><td>⭐${r.calificacion}</td><td>${r.fecha?new Date(r.fecha).toLocaleDateString():'-'}</td></tr>`;
+      found = true;
+      const idUsuario = uMap[r.usuario.toLowerCase()] || '-';
+      tbody.innerHTML += `<tr data-id-real="${d.id}"><td>${idUsuario}</td><td>${r.usuario}</td><td>${lMap[r.idLugar]||r.idLugar}</td><td>${r.comentario}</td><td>⭐${r.calificacion}</td><td>${r.fecha?new Date(r.fecha).toLocaleDateString():'-'}</td></tr>`;
     }
   });
+  if(!found) tbody.innerHTML="<tr><td colspan='6'>Sin resultados</td></tr>";
 }
 
 async function filtrarPorFecha() {
@@ -448,14 +485,21 @@ async function filtrarPorFecha() {
   const di=new Date(i), df=new Date(f); df.setHours(23,59,59);
   const rSnap = await getDocs(collection(db, "reseñas"));
   const lSnap = await getDocs(collection(db, "lugares"));
+  const uSnap = await getDocs(collection(db, "usuarios"));
   const lMap = {}; lSnap.forEach(d => lMap[d.data().id]=d.data().nombre);
+  const uMap = {}; uSnap.forEach(d => uMap[d.data().nombre.toLowerCase()] = d.data().idNum);
+
   tbody.innerHTML = "";
+  let found = false;
   rSnap.forEach(d => {
     const r = d.data();
     if(r.fecha && new Date(r.fecha)>=di && new Date(r.fecha)<=df) {
-      tbody.innerHTML += `<tr><td>${d.id}</td><td>${r.usuario}</td><td>${lMap[r.idLugar]||r.idLugar}</td><td>${r.comentario}</td><td>⭐${r.calificacion}</td><td>${new Date(r.fecha).toLocaleDateString()}</td></tr>`;
+      found = true;
+      const idUsuario = uMap[r.usuario.toLowerCase()] || '-';
+      tbody.innerHTML += `<tr data-id-real="${d.id}"><td>${idUsuario}</td><td>${r.usuario}</td><td>${lMap[r.idLugar]||r.idLugar}</td><td>${r.comentario}</td><td>⭐${r.calificacion}</td><td>${new Date(r.fecha).toLocaleDateString()}</td></tr>`;
     }
   });
+  if(!found) tbody.innerHTML="<tr><td colspan='6'>Sin resultados</td></tr>";
 }
 
 function iniciarNavegacionPorLugar() {
@@ -481,11 +525,15 @@ async function mostrarReseñasReportes(lid, lnom) {
   const t = document.getElementById("reseñasReportesContainer"); t.innerHTML=`<tr><td colspan='6'>Cargando ${lnom}...</td></tr>`;
   const q = query(collection(db, "reseñas"), where("idLugar", "==", lid));
   const snap = await getDocs(q);
+  const uSnap = await getDocs(collection(db, "usuarios"));
+  const uMap = {}; uSnap.forEach(d => uMap[d.data().nombre.toLowerCase()] = d.data().idNum);
+
   t.innerHTML = "";
   if(snap.empty) { t.innerHTML=`<tr><td colspan='6'>Sin reseñas</td></tr>`; return; }
   snap.forEach(d => {
     const r=d.data();
-    t.innerHTML+=`<tr><td><small>${d.id}</small></td><td>${r.usuario}</td><td>${lnom}</td><td>${r.comentario}</td><td>⭐${r.calificacion}</td><td>${r.fecha?new Date(r.fecha).toLocaleDateString():'-'}</td></tr>`;
+    const idUsuario = uMap[r.usuario.toLowerCase()] || '-';
+    t.innerHTML+=`<tr data-id-real="${d.id}"><td>${idUsuario}</td><td>${r.usuario}</td><td>${lnom}</td><td>${r.comentario}</td><td>⭐${r.calificacion}</td><td>${r.fecha?new Date(r.fecha).toLocaleDateString():'-'}</td></tr>`;
   });
 }
 
