@@ -16,6 +16,12 @@
     }
     h1, h2 { color: #0056b3; }
     label { display: block; text-align: left; margin-bottom: 5px; font-weight: bold; }
+    .logo {
+      width: 180px; /* Aumentamos el tamaño del logo */
+      margin-bottom: 15px;
+      margin-left: auto; /* Centrado horizontal */
+      margin-right: auto; /* Centrado horizontal */
+    }
     input[type="text"], input[type="password"] {
       width: calc(100% - 22px); padding: 10px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ddd;
     }
@@ -33,6 +39,7 @@
 </head>
 <body>
   <div class="container" style="margin: 20px;">
+    <img src="Iconos/logo.png" alt="Logo" class="logo">
     <h2>Inicio de sesión</h2>
     <form onsubmit="iniciarSesion(); return false;">
       <label for="nombreUsuario">Usuario:</label>
